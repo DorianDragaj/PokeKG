@@ -1,0 +1,234 @@
+# Schema (TBox) for the Pokemon Knowledge Graph.
+#
+# Scoped to Generation 3: 17 types, no physical/special split per move, and
+# only the five abilities that nullify an attacking type. Loaded into the
+# named graph <http://example.org/pokemon-kg/graph/ontology>.
+
+@prefix pk:   <http://example.org/pokemon-kg/ontology#> .
+@prefix pkr:  <http://example.org/pokemon-kg/resource/> .
+@prefix pkm:  <http://example.org/pokemon-kg/ml/> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<http://example.org/pokemon-kg/ontology>
+    a owl:Ontology ;
+    rdfs:label "Pokemon Matchup Ontology"@en ;
+    rdfs:comment "Vocabulary for 1v1 Generation 3 Pokemon matchups."@en ;
+    owl:versionInfo "1.0" .
+
+
+# Classes
+
+pk:Pokemon a owl:Class ;
+    rdfs:label "Pokemon"@en ;
+    rdfs:comment "A Pokemon species in the Generation 1-3 Pokedex."@en .
+
+pk:Type a owl:Class ;
+    rdfs:label "Type"@en ;
+    rdfs:comment "An elemental type. 17 of them exist in Generation 3."@en .
+
+pk:Move a owl:Class ;
+    rdfs:label "Move"@en ;
+    rdfs:comment "A damaging move learnable by level-up in a Generation 1-3 game."@en .
+
+pk:Ability a owl:Class ;
+    rdfs:label "Ability"@en ;
+    rdfs:comment "An ability that nullifies damage from one attacking type."@en .
+
+pk:DamageClass a owl:Class ;
+    rdfs:label "Damage class"@en ;
+    rdfs:comment "Physical or special. Before Generation 4 this followed the move's type."@en .
+
+pk:Matchup a owl:Class ;
+    rdfs:label "Matchup"@en ;
+    rdfs:comment "A reified 1v1 comparison of two Pokemon, created by the matchup rules."@en .
+
+pk:Pokemon owl:disjointWith pk:Type, pk:Move, pk:Ability, pk:DamageClass .
+pk:Move    owl:disjointWith pk:Type, pk:Ability .
+
+
+# Object properties
+
+pk:hasType a owl:ObjectProperty ;
+    rdfs:label "has type"@en ;
+    rdfs:comment "Every Pokemon has one or two types."@en ;
+    rdfs:domain pk:Pokemon ;
+    rdfs:range pk:Type .
+
+pk:knowsMove a owl:ObjectProperty ;
+    rdfs:label "knows move"@en ;
+    rdfs:domain pk:Pokemon ;
+    rdfs:range pk:Move .
+
+pk:hasAbility a owl:ObjectProperty ;
+    rdfs:label "has ability"@en ;
+    rdfs:domain pk:Pokemon ;
+    rdfs:range pk:Ability .
+
+pk:evolvesInto a owl:ObjectProperty ;
+    rdfs:label "evolves into"@en ;
+    rdfs:comment "Direct evolution, one step only. The closure is derived by the rules."@en ;
+    rdfs:domain pk:Pokemon ;
+    rdfs:range pk:Pokemon ;
+    owl:inverseOf pk:evolvesFrom .
+
+pk:evolvesFrom a owl:ObjectProperty ;
+    rdfs:label "evolves from"@en ;
+    rdfs:domain pk:Pokemon ;
+    rdfs:range pk:Pokemon .
+
+pk:evolvesIntoEventually a owl:ObjectProperty, owl:TransitiveProperty ;
+    rdfs:label "evolves into eventually"@en ;
+    rdfs:comment "Transitive closure of evolvesInto. Populated by the reasoning layer."@en ;
+    rdfs:domain pk:Pokemon ;
+    rdfs:range pk:Pokemon .
+
+pk:moveType a owl:ObjectProperty ;
+    rdfs:label "move type"@en ;
+    rdfs:domain pk:Move ;
+    rdfs:range pk:Type .
+
+pk:damageClass a owl:ObjectProperty ;
+    rdfs:label "damage class"@en ;
+    rdfs:comment "The move's class. In Generation 3 it always matches its type's class."@en ;
+    rdfs:domain pk:Move ;
+    rdfs:range pk:DamageClass .
+
+pk:typeDamageClass a owl:ObjectProperty ;
+    rdfs:label "type damage class"@en ;
+    rdfs:comment "The class every move of this type had before Generation 4."@en ;
+    rdfs:domain pk:Type ;
+    rdfs:range pk:DamageClass .
+
+pk:nullifiesType a owl:ObjectProperty ;
+    rdfs:label "nullifies type"@en ;
+    rdfs:comment "Moves of this type deal no damage to a Pokemon with this ability."@en ;
+    rdfs:domain pk:Ability ;
+    rdfs:range pk:Type .
+
+# Type chart. All three run from the ATTACKING type to the DEFENDING type.
+
+pk:superEffectiveAgainst a owl:ObjectProperty ;
+    rdfs:label "super effective against"@en ;
+    rdfs:comment "Double damage when attacking this type."@en ;
+    rdfs:domain pk:Type ;
+    rdfs:range pk:Type .
+
+pk:resistedBy a owl:ObjectProperty ;
+    rdfs:label "resisted by"@en ;
+    rdfs:comment "Half damage when attacking this type."@en ;
+    rdfs:domain pk:Type ;
+    rdfs:range pk:Type .
+
+pk:noEffectAgainst a owl:ObjectProperty ;
+    rdfs:label "no effect against"@en ;
+    rdfs:comment "Zero damage when attacking this type."@en ;
+    rdfs:domain pk:Type ;
+    rdfs:range pk:Type .
+
+# Inferred by the reasoning layer.
+
+pk:hasMatchupAdvantageOver a owl:ObjectProperty ;
+    rdfs:label "has matchup advantage over"@en ;
+    rdfs:comment "Inferred: this Pokemon is favoured 1v1. Not symmetric, not transitive."@en ;
+    rdfs:domain pk:Pokemon ;
+    rdfs:range pk:Pokemon .
+
+pk:attacker a owl:ObjectProperty ;
+    rdfs:domain pk:Matchup ; rdfs:range pk:Pokemon .
+
+pk:defender a owl:ObjectProperty ;
+    rdfs:domain pk:Matchup ; rdfs:range pk:Pokemon .
+
+pk:bestMove a owl:ObjectProperty ;
+    rdfs:comment "The move that justified the matchup verdict."@en ;
+    rdfs:domain pk:Matchup ; rdfs:range pk:Move .
+
+
+# Datatype properties
+
+pk:pokedexId a owl:DatatypeProperty ;
+    rdfs:label "Pokedex number"@en ;
+    rdfs:domain pk:Pokemon ; rdfs:range xsd:integer .
+
+pk:hp a owl:DatatypeProperty ;
+    rdfs:domain pk:Pokemon ; rdfs:range xsd:integer .
+pk:attack a owl:DatatypeProperty ;
+    rdfs:domain pk:Pokemon ; rdfs:range xsd:integer .
+pk:defense a owl:DatatypeProperty ;
+    rdfs:domain pk:Pokemon ; rdfs:range xsd:integer .
+pk:specialAttack a owl:DatatypeProperty ;
+    rdfs:domain pk:Pokemon ; rdfs:range xsd:integer .
+pk:specialDefense a owl:DatatypeProperty ;
+    rdfs:domain pk:Pokemon ; rdfs:range xsd:integer .
+pk:speed a owl:DatatypeProperty ;
+    rdfs:domain pk:Pokemon ; rdfs:range xsd:integer .
+
+pk:isFullyEvolved a owl:DatatypeProperty ;
+    rdfs:label "is fully evolved"@en ;
+    rdfs:comment "Inferred: true when the Pokemon has no evolvesInto successor."@en ;
+    rdfs:domain pk:Pokemon ; rdfs:range xsd:boolean .
+
+pk:power a owl:DatatypeProperty ;
+    rdfs:comment "Base power in Generation 3. Status moves are out of scope."@en ;
+    rdfs:domain pk:Move ; rdfs:range xsd:integer .
+
+pk:accuracy a owl:DatatypeProperty ;
+    rdfs:comment "Percentage. Absent on moves that never miss."@en ;
+    rdfs:domain pk:Move ; rdfs:range xsd:integer .
+
+pk:attackerDamage a owl:DatatypeProperty ;
+    rdfs:comment "Expected HP the attacker's best move takes off the defender in one hit."@en ;
+    rdfs:domain pk:Matchup ; rdfs:range xsd:decimal .
+
+pk:defenderDamage a owl:DatatypeProperty ;
+    rdfs:comment "The same figure with the two Pokemon swapped."@en ;
+    rdfs:domain pk:Matchup ; rdfs:range xsd:decimal .
+
+pk:attackerTurns a owl:DatatypeProperty ;
+    rdfs:comment "Hits the attacker needs to knock the defender out."@en ;
+    rdfs:domain pk:Matchup ; rdfs:range xsd:integer .
+
+pk:defenderTurns a owl:DatatypeProperty ;
+    rdfs:comment "The same figure with the two Pokemon swapped."@en ;
+    rdfs:domain pk:Matchup ; rdfs:range xsd:integer .
+
+pk:movesFirst a owl:DatatypeProperty ;
+    rdfs:comment "True when the attacker outspeeds the defender and so strikes first."@en ;
+    rdfs:domain pk:Matchup ; rdfs:range xsd:boolean .
+
+pk:advantageScore a owl:DatatypeProperty ;
+    rdfs:comment "Quantified margin behind a matchup verdict, in (0, 1). Derived from the two knock-out counts, with moving first counted as half a turn."@en ;
+    rdfs:domain pk:Matchup ; rdfs:range xsd:decimal .
+
+
+# Terms for the ML layer. They describe predictions rather than Pokemon, so
+# they live in their own namespace and are never asserted about the domain.
+
+pkm:confidence a owl:DatatypeProperty ;
+    rdfs:comment "Rank of a predicted matchup among all predictions in its batch, scaled to (0, 1]. It orders predictions rather than calibrating them: the highest-ranked tenth is about 94% correct against 58% for the lowest."@en ;
+    rdfs:domain pk:Matchup ; rdfs:range xsd:decimal .
+
+pkm:producedBy a owl:DatatypeProperty ;
+    rdfs:comment "Model that generated a graph of predictions. Asserted once about the named graph, not about each edge."@en ;
+    rdfs:range xsd:string .
+
+pkm:generatedOn a owl:DatatypeProperty ;
+    rdfs:comment "Date a graph of predictions was written."@en ;
+    rdfs:range xsd:date .
+
+
+# Entities that belong to the schema rather than the extracted data:
+# the two damage classes, and the five abilities with the type each nullifies.
+# The nullification links come from the project scope, not from PokeAPI.
+
+pkr:physical a pk:DamageClass ; rdfs:label "physical"@en .
+pkr:special  a pk:DamageClass ; rdfs:label "special"@en .
+
+pkr:levitate      a pk:Ability ; rdfs:label "Levitate"@en      ; pk:nullifiesType pkr:ground .
+pkr:flash-fire    a pk:Ability ; rdfs:label "Flash Fire"@en    ; pk:nullifiesType pkr:fire .
+pkr:volt-absorb   a pk:Ability ; rdfs:label "Volt Absorb"@en   ; pk:nullifiesType pkr:electric .
+pkr:lightning-rod a pk:Ability ; rdfs:label "Lightning Rod"@en ; pk:nullifiesType pkr:electric .
+pkr:water-absorb  a pk:Ability ; rdfs:label "Water Absorb"@en  ; pk:nullifiesType pkr:water .

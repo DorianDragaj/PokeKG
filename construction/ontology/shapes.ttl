@@ -1,0 +1,115 @@
+# SHACL shapes for the Pokemon Knowledge Graph.
+#
+# These restate the invariants extract.py checks in Python, so they also hold
+# for triples produced by the reasoning rules. Bounds are taken from the
+# extracted dataset: stats 1-255, power 1-250, ids 1-386.
+#
+# Checked by construction/src/load.py before anything reaches the store:
+#   make load
+
+@prefix pk:   <http://example.org/pokemon-kg/ontology#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix pksh: <http://example.org/pokemon-kg/shapes#> .
+
+pksh:PokemonShape a sh:NodeShape ;
+    sh:targetClass pk:Pokemon ;
+    sh:property [
+        sh:path rdfs:label ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "Every Pokemon needs exactly one label." ] ;
+    sh:property [
+        sh:path pk:pokedexId ;
+        sh:datatype xsd:integer ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:minInclusive 1 ; sh:maxInclusive 386 ;
+        sh:message "Pokedex id must be a single integer in 1-386 (Gen 1-3)." ] ;
+    sh:property [
+        sh:path pk:hasType ;
+        sh:class pk:Type ;
+        sh:minCount 1 ; sh:maxCount 2 ;
+        sh:message "A Pokemon has one or two types." ] ;
+    sh:property [
+        sh:path pk:hasAbility ;
+        sh:class pk:Ability ;
+        sh:maxCount 1 ;
+        sh:message "At most one type-nullifying ability is modelled." ] ;
+    sh:property [
+        sh:path pk:knowsMove ;
+        sh:class pk:Move ;
+        sh:message "knowsMove must point at a Move." ] ;
+    sh:property [
+        sh:path pk:evolvesInto ;
+        sh:class pk:Pokemon ] ;
+    sh:property [ sh:path pk:hp ;
+        sh:datatype xsd:integer ; sh:minCount 1 ; sh:maxCount 1 ;
+        sh:minInclusive 1 ; sh:maxInclusive 255 ] ;
+    sh:property [ sh:path pk:attack ;
+        sh:datatype xsd:integer ; sh:minCount 1 ; sh:maxCount 1 ;
+        sh:minInclusive 1 ; sh:maxInclusive 255 ] ;
+    sh:property [ sh:path pk:defense ;
+        sh:datatype xsd:integer ; sh:minCount 1 ; sh:maxCount 1 ;
+        sh:minInclusive 1 ; sh:maxInclusive 255 ] ;
+    sh:property [ sh:path pk:specialAttack ;
+        sh:datatype xsd:integer ; sh:minCount 1 ; sh:maxCount 1 ;
+        sh:minInclusive 1 ; sh:maxInclusive 255 ] ;
+    sh:property [ sh:path pk:specialDefense ;
+        sh:datatype xsd:integer ; sh:minCount 1 ; sh:maxCount 1 ;
+        sh:minInclusive 1 ; sh:maxInclusive 255 ] ;
+    sh:property [ sh:path pk:speed ;
+        sh:datatype xsd:integer ; sh:minCount 1 ; sh:maxCount 1 ;
+        sh:minInclusive 1 ; sh:maxInclusive 255 ] .
+
+pksh:MoveShape a sh:NodeShape ;
+    sh:targetClass pk:Move ;
+    sh:property [
+        sh:path rdfs:label ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [
+        sh:path pk:moveType ;
+        sh:class pk:Type ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "Every move has exactly one type." ] ;
+    sh:property [
+        sh:path pk:power ;
+        sh:datatype xsd:integer ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:minInclusive 1 ; sh:maxInclusive 250 ;
+        sh:message "Only damaging moves are in scope, so power must be at least 1." ] ;
+    sh:property [
+        sh:path pk:accuracy ;
+        sh:datatype xsd:integer ;
+        sh:maxCount 1 ;
+        sh:minInclusive 1 ; sh:maxInclusive 100 ;
+        sh:message "Accuracy is a percentage, and is absent on moves that never miss." ] ;
+    sh:property [
+        sh:path pk:damageClass ;
+        sh:class pk:DamageClass ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "Every move is physical or special." ] .
+
+pksh:TypeShape a sh:NodeShape ;
+    sh:targetClass pk:Type ;
+    sh:property [
+        sh:path rdfs:label ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ; sh:maxCount 1 ] ;
+    sh:property [
+        sh:path pk:typeDamageClass ;
+        sh:class pk:DamageClass ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "Before Gen 4 every type had a fixed damage class." ] ;
+    sh:property [ sh:path pk:superEffectiveAgainst ; sh:class pk:Type ] ;
+    sh:property [ sh:path pk:resistedBy ;           sh:class pk:Type ] ;
+    sh:property [ sh:path pk:noEffectAgainst ;      sh:class pk:Type ] .
+
+pksh:AbilityShape a sh:NodeShape ;
+    sh:targetClass pk:Ability ;
+    sh:property [
+        sh:path pk:nullifiesType ;
+        sh:class pk:Type ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:message "Each modelled ability nullifies exactly one attacking type." ] .

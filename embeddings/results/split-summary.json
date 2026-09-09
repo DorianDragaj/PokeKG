@@ -1,0 +1,97 @@
+{
+  "seed": 20260906,
+  "split": "random over matchup edges",
+  "shares": {
+    "train": 0.8,
+    "valid": 0.1,
+    "test": 0.1
+  },
+  "triples": {
+    "feature": 4033,
+    "band": 2364,
+    "matchup_total": 17663,
+    "train": 14131,
+    "valid": 1766,
+    "test": 1766
+  },
+  "pokemon_with_matchups": 189,
+  "band_boundaries": {
+    "hp": {
+      "lowest": 1.0,
+      "band_starts": [
+        1.0,
+        45.0,
+        60.0,
+        65.0,
+        80.0
+      ],
+      "highest": 255.0
+    },
+    "attack": {
+      "lowest": 5.0,
+      "band_starts": [
+        5.0,
+        45.0,
+        60.0,
+        75.0,
+        95.0
+      ],
+      "highest": 160.0
+    },
+    "defense": {
+      "lowest": 5.0,
+      "band_starts": [
+        5.0,
+        44.0,
+        57.0,
+        70.0,
+        85.0
+      ],
+      "highest": 230.0
+    },
+    "specialAttack": {
+      "lowest": 10.0,
+      "band_starts": [
+        10.0,
+        40.0,
+        55.0,
+        70.0,
+        90.0
+      ],
+      "highest": 135.0
+    },
+    "specialDefense": {
+      "lowest": 20.0,
+      "band_starts": [
+        20.0,
+        45.0,
+        55.0,
+        70.0,
+        85.0
+      ],
+      "highest": 230.0
+    },
+    "speed": {
+      "lowest": 5.0,
+      "band_starts": [
+        5.0,
+        40.0,
+        55.0,
+        70.0,
+        85.0
+      ],
+      "highest": 160.0
+    },
+    "power": {
+      "lowest": 1.0,
+      "band_starts": [
+        1.0,
+        30.0,
+        55.0,
+        70.0,
+        90.0
+      ],
+      "highest": 250.0
+    }
+  }
+}

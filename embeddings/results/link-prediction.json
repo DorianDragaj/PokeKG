@@ -1,0 +1,31 @@
+{
+  "seed": 20260906,
+  "results": {
+    "RGCN": {
+      "mean_reciprocal_rank": 0.4893,
+      "hits_at_1": 0.3516,
+      "hits_at_3": 0.551,
+      "hits_at_10": 0.7792,
+      "arithmetic_mean_rank": 8.5037,
+      "accuracy": 0.8737,
+      "precision": 0.8611,
+      "recall": 0.8913,
+      "roc_auc": 0.9447,
+      "threshold": -12.3689
+    },
+    "RotatE": {
+      "mean_reciprocal_rank": 0.6154,
+      "hits_at_1": 0.4677,
+      "hits_at_3": 0.7075,
+      "hits_at_10": 0.9074,
+      "arithmetic_mean_rank": 4.2268,
+      "accuracy": 0.9023,
+      "precision": 0.8945,
+      "recall": 0.9122,
+      "roc_auc": 0.9633,
+      "threshold": -8.8555,
+      "edges_written": 2222,
+      "edges_correct": 1383
+    }
+  }
+}

@@ -1,0 +1,36 @@
+# Apache Jena Fuseki service definition for the Pokémon Knowledge Graph.
+#
+# Mounted into the container at /fuseki-base/configuration/assembler.ttl, which
+# replaces the demo dataset that ships with the image. One TDB2-backed dataset
+# is exposed at http://localhost:3030/pokemon with query, update, Graph Store
+# Protocol and SHACL endpoints.
+
+@prefix fuseki: <http://jena.apache.org/fuseki#> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix ja:     <http://jena.hpl.hp.com/2005/11/Assembler#> .
+@prefix tdb2:   <http://jena.apache.org/2016/tdb#> .
+@prefix :       <#> .
+
+:service rdf:type fuseki:Service ;
+    fuseki:name "pokemon" ;
+
+    # SPARQL 1.1 Query  -> POST http://localhost:3030/pokemon/sparql
+    fuseki:endpoint [ fuseki:operation fuseki:query   ; fuseki:name "sparql" ] ;
+    fuseki:endpoint [ fuseki:operation fuseki:query   ; fuseki:name "query"  ] ;
+    # SPARQL 1.1 Update -> POST http://localhost:3030/pokemon/update
+    fuseki:endpoint [ fuseki:operation fuseki:update  ; fuseki:name "update" ] ;
+    # Graph Store Protocol (bulk load a named graph) -> /pokemon/data?graph=<iri>
+    fuseki:endpoint [ fuseki:operation fuseki:gsp-rw  ; fuseki:name "data"   ] ;
+    # HTML file upload from the Fuseki UI
+    fuseki:endpoint [ fuseki:operation fuseki:upload  ; fuseki:name "upload" ] ;
+    # SHACL validation service -> POST /pokemon/shacl?graph=<iri>
+    fuseki:endpoint [ fuseki:operation fuseki:shacl   ; fuseki:name "shacl"  ] ;
+
+    fuseki:dataset :dataset .
+
+:dataset rdf:type tdb2:DatasetTDB2 ;
+    tdb2:location "/fuseki-base/databases/pokemon" ;
+    # The default graph is the union of all named graphs, so exploratory queries
+    # such as `SELECT * WHERE { ?s ?p ?o }` see everything without a GRAPH clause,
+    # while `GRAPH ?g { ... }` still lets us isolate asserted vs. inferred layers.
+    tdb2:unionDefaultGraph true .

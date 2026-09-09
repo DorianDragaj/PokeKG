@@ -1,0 +1,18 @@
+# --- RDF / SPARQL ---
+rdflib>=7.0.0            # RDF graph handling, Turtle (de)serialisation
+pyshacl>=0.26.0          # SHACL validation + SHACL-AF rules
+owlrl>=7.1.2             # RDFS / OWL-RL entailment for offline comparison
+
+# --- Data acquisition ---
+requests>=2.31.0
+
+# --- ML / KG embeddings ---
+torch>=2.2
+pykeen>=1.11             # TransE / ComplEx / RotatE / R-GCN, link-prediction evaluation
+pandas>=2.2
+numpy>=1.26
+matplotlib>=3.8          # result plots for the portfolio
+
+# --- Service layer ---
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0

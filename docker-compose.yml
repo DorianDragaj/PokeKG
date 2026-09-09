@@ -1,0 +1,27 @@
+# Triplestore for the Pokémon Knowledge Graph.
+#   make up     -> start,   http://localhost:3030  (user: admin, pass: admin)
+#   make down   -> stop, keeping the data
+#   make reset  -> stop and delete the database volume
+services:
+  fuseki:
+    image: secoresearch/fuseki:latest      # Apache Jena Fuseki 6.2 (TDB2)
+    container_name: pokemon-fuseki
+    ports:
+      - "3030:3030"
+    environment:
+      ADMIN_PASSWORD: ${FUSEKI_PASSWORD:-admin}
+    volumes:
+      # Our dataset definition replaces the image's demo dataset.
+      - ./fuseki/dataset-config.ttl:/fuseki-base/configuration/assembler.ttl:ro
+      # TDB2 files live in a named volume so `docker compose down` keeps the KG.
+      - fuseki-data:/fuseki-base/databases
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:3030/$$/ping || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  fuseki-data:

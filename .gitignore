@@ -1,0 +1,34 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# IDE
+.idea/
+.vscode/
+
+# Local environment
+.env
+
+# Generated artefacts. The 121 MB PokeAPI response cache, the RDF built from
+# the dataset, the triple files fed to PyKEEN and the trained checkpoints are
+# all rebuildable from a clean checkout (make transform, make embed).
+construction/data/raw/cache/
+construction/data/rdf/
+embeddings/data/
+embeddings/models/
+embeddings/results/**/checkpoints/
+**/.ipynb_checkpoints/
+
+# Fuseki runtime state (lives in a Docker volume, never in git)
+fuseki/databases/
+
+docs/
+scenario/
+reflection/
+
+# OS
+.DS_Store
