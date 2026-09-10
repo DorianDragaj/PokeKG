@@ -46,8 +46,9 @@ moves, weather, terrain or team synergy.
 │   ├── generations.py   projection of current data back to Generation 3
 │   └── smoke.py         triplestore acceptance test (`make smoke`)
 ├── fuseki/              dataset-config.ttl, the Fuseki service definition
-├── Makefile             every task: up, extract, smoke, status, reset
-└── docker-compose.yml   Fuseki 6.2 + a persistent TDB2 volume
+├── Makefile             every task: install, up, transform, load, embed, serve
+├── Dockerfile           the app image: Python 3.12 + CPU torch + requirements
+└── docker-compose.yml   Fuseki 6.2 + the app runtime + persistent volumes
 ```
 
 Three further directories exist locally but are not version-controlled (see
@@ -61,7 +62,9 @@ committed empty.
 
 ## Getting started
 
-**Prerequisites:** Docker with the Compose plugin, and Python 3.10 or newer.
+**The only prerequisite is Docker** (with the Compose plugin). Python, PyTorch
+and the rest of the dependencies live inside the `app` image, so a fresh
+checkout installs nothing on the host.
 
 Every command below is a `make` target, run from the repository root. The blocks
 are deliberately free of trailing comments so they can be pasted straight into a
@@ -70,7 +73,6 @@ shell (see the zsh note at the end of this section).
 ### 1. Set up and populate the graph
 
 ```bash
-make venv
 make install
 make up
 make transform
@@ -79,9 +81,8 @@ make load
 
 | Step | What it does |
 |---|---|
-| `make venv` | Creates `./venv`. Only needed once; skip it if the directory exists. |
-| `make install` | Installs `requirements.txt` into `./venv`. |
-| `make up` | Starts Fuseki at <http://localhost:3030> (admin / admin) and waits until it answers. |
+| `make install` | Builds the `app` image from `Dockerfile`. Once per checkout; a few minutes, mostly PyTorch. |
+| `make up` | Starts Fuseki at <http://localhost:3030> (admin / admin) and waits until it reports healthy. |
 | `make transform` | Builds `construction/data/rdf/base.ttl` from the committed dataset. |
 | `make load` | SHACL-validates, then loads the ontology, shapes and base graphs. |
 
@@ -119,6 +120,35 @@ make serve
 
 The interactive docs are then at <http://localhost:8000/docs>.
 
+## How the two modes work
+
+Each pipeline step is a short-lived container: `make transform` is really
+`docker compose run --rm app python construction/src/transform.py`. The
+repository is bind-mounted at `/app`, so edits take effect immediately without
+rebuilding and generated artefacts (`construction/data/rdf/`,
+`embeddings/models/`, `embeddings/results/`) appear in your working tree, owned
+by you rather than by root. The container reaches the triplestore over the
+Compose network as `http://fuseki:3030`, which `pokekg/settings.py` picks up
+from `FUSEKI_HOST`.
+
+If you would rather run the Python locally — for a debugger, or to avoid the
+image build — every target also works against a virtualenv with `DOCKER=0`:
+
+```bash
+make DOCKER=0 venv
+make DOCKER=0 install
+make DOCKER=0 transform
+```
+
+Export `DOCKER=0` in your shell to make that the default for the session. In
+that mode `pip install torch` pulls the CUDA build from PyPI, about 2.5 GB of
+NVIDIA runtime libraries the project never uses. To avoid it, install the
+CPU-only wheel first, exactly as the `Dockerfile` does:
+
+```bash
+./venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
+```
+
 ### Notes
 
 `make transform` reads the committed dataset at
@@ -127,8 +157,9 @@ The RDF it writes is a generated artefact and is not version-controlled.
 `make extract` rebuilds that dataset from PokéAPI directly, which is only needed
 to widen the scope and takes several minutes on a cold cache.
 
-Other targets: `make down` (stop, keep data), `make reset` (stop and delete the
-database volume), `make logs`, `make clean-graphs`, `make help`.
+Other targets: `make shell` (a shell inside the app container), `make down`
+(stop, keep data), `make reset` (stop and delete the database volume),
+`make logs`, `make clean-graphs`, `make help`.
 
 **Using zsh?** Do not paste commands with a trailing `# comment`. Interactive
 comments are off by default in zsh, so `make up  # start Fuseki` fails with

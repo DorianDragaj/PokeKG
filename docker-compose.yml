@@ -1,11 +1,13 @@
-# Triplestore for the Pokémon Knowledge Graph.
-#   make up     -> start,   http://localhost:3030  (user: admin, pass: admin)
+# Triplestore + Python runtime for the Pokémon Knowledge Graph.
+#   make up     -> start Fuseki,  http://localhost:3030  (user: admin, pass: admin)
 #   make down   -> stop, keeping the data
 #   make reset  -> stop and delete the database volume
 services:
   fuseki:
     image: secoresearch/fuseki:latest      # Apache Jena Fuseki 6.2 (TDB2)
-    container_name: pokemon-fuseki
+    # No container_name on purpose: a fixed name collides with any other
+    # checkout of this repo on the same machine. Compose derives one from the
+    # project directory instead.
     ports:
       - "3030:3030"
     environment:
@@ -23,5 +25,31 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  # Every pipeline step runs here, one container per `make` target. Behind a
+  # profile so `docker compose up` starts the triplestore only; the Makefile
+  # reaches this service with `docker compose run --rm app ...`.
+  app:
+    build: .
+    image: pokekg-app
+    profiles: ["cli"]
+    depends_on:
+      fuseki:
+        condition: service_healthy
+    environment:
+      # Container-to-container, so the service name rather than localhost.
+      FUSEKI_HOST: http://fuseki:3030
+      FUSEKI_PASSWORD: ${FUSEKI_PASSWORD:-admin}
+      HOME: /home/app
+    volumes:
+      # The repository itself, so edits are live and generated artefacts
+      # (data/rdf, embeddings/models, results) land in the working tree.
+      - .:/app
+      # PyKEEN and Matplotlib caches, kept out of the working tree.
+      - app-home:/home/app
+    ports:
+      - "8000:8000"                        # make serve
+    working_dir: /app
+
 volumes:
   fuseki-data:
+  app-home:

@@ -1,0 +1,11 @@
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.git/
+construction/data/raw/cache/
+embeddings/models/
+embeddings/data/
+docs/
+scenario/
+reflection/

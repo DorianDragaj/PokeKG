@@ -27,9 +27,11 @@ make transform
 make load
 ```
 
-`make install` is needed once, `make up` starts Fuseki, `make transform` turns
-`data/raw/pokeapi_dataset.json` into `data/rdf/base.ttl`, and `make load`
-SHACL-validates before loading the ontology, shapes and data graphs.
+`make install` builds the app image and is needed once per checkout, `make up`
+starts Fuseki, `make transform` turns `data/raw/pokeapi_dataset.json` into
+`data/rdf/base.ttl`, and `make load` SHACL-validates before loading the
+ontology, shapes and data graphs. Each step runs in a container; see the root
+README for the `DOCKER=0` virtualenv alternative.
 
 `make transform` reads the committed dataset, so the pipeline is reproducible
 without network access. `make extract` rebuilds that dataset from PokéAPI and is
