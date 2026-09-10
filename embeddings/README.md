@@ -5,8 +5,10 @@ evaluated on their ability to predict them back. Report section 3;
 **LO1** (focus), LO3, LO6, LO8.
 
 ```bash
-make embed          # split -> train -> evaluate
+make embed
 ```
+
+`make embed` chains the three steps: `split` -> `train` -> `evaluate`.
 
 Needs Fuseki up (`make up`) and the rules run (`make reason`). Training takes
 about seven minutes on a CPU.

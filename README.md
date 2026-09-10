@@ -61,22 +61,65 @@ committed empty.
 
 ## Getting started
 
-From a clean checkout, these five commands take you to a populated graph:
+**Prerequisites:** Docker with the Compose plugin, and Python 3.10 or newer.
+
+Every command below is a `make` target, run from the repository root. The blocks
+are deliberately free of trailing comments so they can be pasted straight into a
+shell (see the zsh note at the end of this section).
+
+### 1. Set up and populate the graph
 
 ```bash
-make venv          # once, if ./venv does not exist
-make install       # install Python dependencies
-make up            # start Fuseki at http://localhost:3030 (admin / admin)
-make transform     # build construction/data/rdf/base.ttl from the dataset
-make load          # SHACL-validate, then load ontology + shapes + data
+make venv
+make install
+make up
+make transform
+make load
 ```
 
-Then check the result:
+| Step | What it does |
+|---|---|
+| `make venv` | Creates `./venv`. Only needed once; skip it if the directory exists. |
+| `make install` | Installs `requirements.txt` into `./venv`. |
+| `make up` | Starts Fuseki at <http://localhost:3030> (admin / admin) and waits until it answers. |
+| `make transform` | Builds `construction/data/rdf/base.ttl` from the committed dataset. |
+| `make load` | SHACL-validates, then loads the ontology, shapes and base graphs. |
+
+### 2. Check that it worked
 
 ```bash
-make status        # triple counts per named graph (expect base 7072, ontology 194, shapes 140)
-make smoke         # acceptance test: 10 checks, all should pass
+make status
+make smoke
 ```
+
+`make status` prints the triple count per named graph — expect base 7072,
+ontology 194, shapes 140. `make smoke` is the acceptance test: 10 checks, all of
+which should pass.
+
+### 3. Reasoning, embeddings and the API
+
+```bash
+make reason
+make entail
+make embed
+```
+
+| Step | What it does |
+|---|---|
+| `make reason` | Runs the SPARQL rules, materialising `inferred-recursive` and `inferred-matchup`. |
+| `make entail` | Materialises the RDFS / OWL-RL entailments into `inferred-rdfs`, for comparison. |
+| `make embed` | The whole ML step: `split` withholds matchup edges, `train` fits RotatE, `evaluate` ranks the held-out edges. Training takes about seven minutes on a CPU. |
+
+With all of that in place, start the read-only API. It runs in the foreground,
+so give it a terminal of its own and stop it with `Ctrl-C`:
+
+```bash
+make serve
+```
+
+The interactive docs are then at <http://localhost:8000/docs>.
+
+### Notes
 
 `make transform` reads the committed dataset at
 `construction/data/raw/pokeapi_dataset.json`, so no network access is needed.
@@ -86,6 +129,15 @@ to widen the scope and takes several minutes on a cold cache.
 
 Other targets: `make down` (stop, keep data), `make reset` (stop and delete the
 database volume), `make logs`, `make clean-graphs`, `make help`.
+
+**Using zsh?** Do not paste commands with a trailing `# comment`. Interactive
+comments are off by default in zsh, so `make up  # start Fuseki` fails with
+`zsh: bad pattern: #` and the command never runs. Either paste the bare commands
+as printed above, or enable comments once with:
+
+```bash
+echo 'setopt interactive_comments' >> ~/.zshrc
+```
 
 ## Named graphs
 

@@ -4,8 +4,10 @@ A read-only HTTP API over the knowledge graph, which is the outcome the
 scenario asks for. Report sections 1 and 5; **LO5**, **LO11**.
 
 ```bash
-make serve          # http://localhost:8000/docs
+make serve
 ```
+
+The interactive docs are then at <http://localhost:8000/docs>.
 
 Needs Fuseki up (`make up`) with the data loaded, the rules run (`make reason`)
 and, for predicted matchups, `make embed`.
